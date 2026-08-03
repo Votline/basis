@@ -8,6 +8,8 @@ import (
 	"fmt"
 	"time"
 
+	"gateway/internal/utils"
+
 	_ "github.com/go-sql-driver/mysql"
 	"go.uber.org/zap"
 )
@@ -25,12 +27,18 @@ func NewDB(dsn string, log *zap.Logger) (*MySQL, error) {
 		return nil, fmt.Errorf("%s: open db: %w", op, err)
 	}
 
-	db.SetMaxOpenConns(25)
-	db.SetMaxIdleConns(25)
-	db.SetConnMaxLifetime(5 * time.Minute)
-	db.SetConnMaxIdleTime(5 * time.Minute)
+	moc := utils.GetEnvInt("DB_MAX_OPEN_CONNS", 25)
+	mic := utils.GetEnvInt("DB_MAX_IDLE_CONNS", 25)
+	cml := time.Duration(utils.GetEnvInt("DB_CONN_MAX_LIFETIME", 5)) * time.Minute
+	mit := time.Duration(utils.GetEnvInt("DB_CONN_MAX_IDLE_TIME", 5)) * time.Minute
+	pingTimeout := time.Duration(utils.GetEnvInt("DB_PING_TIMEOUT", 5)) * time.Second
 
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	db.SetMaxOpenConns(moc)
+	db.SetMaxIdleConns(mic)
+	db.SetConnMaxLifetime(cml)
+	db.SetConnMaxIdleTime(mit)
+
+	ctx, cancel := context.WithTimeout(context.Background(), pingTimeout)
 	defer cancel()
 
 	if err := db.PingContext(ctx); err != nil {
