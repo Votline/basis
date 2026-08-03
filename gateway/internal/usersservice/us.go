@@ -6,6 +6,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"os"
 
 	"gateway/internal/db"
 	"gateway/internal/services"
@@ -14,13 +15,19 @@ import (
 )
 
 type UsersService struct {
-	name string
-	log  *zap.Logger
-	db   *db.DB
+	name      string
+	jwtSecret []byte
+	log       *zap.Logger
+	db        *db.DB
 }
 
 func NewUS(mux *http.ServeMux, log *zap.Logger) (services.Service, error) {
 	const op = "users_service.NewUS"
+
+	jwtSecret := []byte(os.Getenv("JWT_SECRET"))
+	if len(jwtSecret) == 0 {
+		return nil, fmt.Errorf("%s: get jwt secret: nil jwt secret:", op)
+	}
 
 	db, err := db.NewDB(log)
 	if err != nil {
@@ -31,9 +38,10 @@ func NewUS(mux *http.ServeMux, log *zap.Logger) (services.Service, error) {
 		zap.String("op", op))
 
 	return &UsersService{
-		name: "users_service",
-		log:  log,
-		db:   db,
+		name:      "users_service",
+		jwtSecret: jwtSecret,
+		log:       log,
+		db:        db,
 	}, nil
 }
 

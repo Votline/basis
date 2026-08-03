@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"time"
 
+	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -35,4 +37,30 @@ func HashPassword(password string) (string, error) {
 func CheckPasswordHash(password, hash string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
 	return err == nil
+}
+
+type CustomClaims struct {
+	UserID int64  `json:"user_id"`
+	Email  string `json:"email"`
+	jwt.RegisteredClaims
+}
+
+// GenerateJWT создает новый token на 24 часа
+func GenerateJWT(userID int64, email string, secret []byte) (string, error) {
+	claims := CustomClaims{
+		UserID: userID,
+		Email:  email,
+		RegisteredClaims: jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(24 * time.Hour)),
+			IssuedAt:  jwt.NewNumericDate(time.Now()),
+		},
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	tokenString, err := token.SignedString(secret)
+	if err != nil {
+		return "", fmt.Errorf("sign token: %w", err)
+	}
+
+	return tokenString, nil
 }

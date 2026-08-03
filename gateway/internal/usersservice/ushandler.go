@@ -70,4 +70,53 @@ func (us *UsersService) register(w http.ResponseWriter, r *http.Request) {
 
 func (us *UsersService) login(w http.ResponseWriter, r *http.Request) {
 	const op = "usersservice.login"
+
+	if r.Method != http.MethodPost {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	var req struct {
+		Email    string `json:"email"`
+		Password string `json:"password"`
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		us.log.Error("failed to decode login req",
+			zap.String("op", op),
+			zap.Error(err))
+		http.Error(w, "invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	if req.Email == "" || req.Password == "" {
+		http.Error(w, "email and password are required", http.StatusBadRequest)
+		return
+	}
+
+	user, err := us.db.GetUserByEmail(r.Context(), req.Email)
+	if err != nil {
+		us.log.Error("failed to get user",
+			zap.String("op", op),
+			zap.Error(err))
+		http.Error(w, "internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	if !utils.CheckPasswordHash(req.Password, user.PasswordHash) {
+		http.Error(w, "invalid email or password", http.StatusUnauthorized)
+		return
+	}
+
+	token, err := utils.GenerateJWT(user.ID, user.Email, us.jwtSecret)
+	if err != nil {
+		us.log.Error("failed to generate jwt", zap.String("op", op), zap.Error(err))
+		http.Error(w, "internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	_ = json.NewEncoder(w).Encode(map[string]string{
+		"token": token,
+	})
 }

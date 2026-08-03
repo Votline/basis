@@ -44,7 +44,7 @@ func (m *DB) CreateUser(ctx context.Context, email, passwordHash string) (int64,
 func (m *DB) GetUserByEmail(ctx context.Context, email string) (*User, error) {
 	const op = "db.GetUserByEmail"
 
-	query := `SELECT id, email, password_hash, name, created_at FROM users WHERE email = ?`
+	query := `SELECT id, email, password_hash, created_at FROM users WHERE email = ?`
 
 	user := &User{}
 	err := m.DB.QueryRowContext(ctx, query, email).Scan(
