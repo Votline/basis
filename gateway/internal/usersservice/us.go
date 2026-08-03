@@ -4,8 +4,10 @@ package usersservice
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 
+	"gateway/internal/db"
 	"gateway/internal/services"
 
 	"go.uber.org/zap"
@@ -14,10 +16,16 @@ import (
 type UsersService struct {
 	name string
 	log  *zap.Logger
+	db   *db.DB
 }
 
 func NewUS(mux *http.ServeMux, log *zap.Logger) (services.Service, error) {
 	const op = "users_service.NewUS"
+
+	db, err := db.NewDB(log)
+	if err != nil {
+		return nil, fmt.Errorf("%s: create db: %w", op, err)
+	}
 
 	log.Debug("Successfully created users service",
 		zap.String("op", op))
@@ -25,6 +33,7 @@ func NewUS(mux *http.ServeMux, log *zap.Logger) (services.Service, error) {
 	return &UsersService{
 		name: "users_service",
 		log:  log,
+		db:   db,
 	}, nil
 }
 

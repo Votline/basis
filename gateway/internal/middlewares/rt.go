@@ -61,8 +61,7 @@ func (rl *RateLimiter) Process(next http.Handler) http.Handler {
 		if count > rl.limit {
 			w.Header().Set("Retry-After", "60")
 			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(http.StatusTooManyRequests)
-			_, _ = w.Write([]byte(`{"error":"too many requests"}`))
+			http.Error(w, "too many requests", http.StatusTooManyRequests)
 			return
 		}
 

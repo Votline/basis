@@ -6,6 +6,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"os"
 	"time"
 
 	"gateway/internal/utils"
@@ -14,13 +15,15 @@ import (
 	"go.uber.org/zap"
 )
 
-type MySQL struct {
+type DB struct {
 	DB  *sql.DB
 	log *zap.Logger
 }
 
-func NewDB(dsn string, log *zap.Logger) (*MySQL, error) {
+func NewDB(log *zap.Logger) (*DB, error) {
 	const op = "db.repo.NewDB"
+
+	dsn := os.Getenv("DB_DSN")
 
 	db, err := sql.Open("mysql", dsn)
 	if err != nil {
@@ -45,13 +48,13 @@ func NewDB(dsn string, log *zap.Logger) (*MySQL, error) {
 		return nil, fmt.Errorf("%s: ping db: %w", op, err)
 	}
 
-	return &MySQL{
+	return &DB{
 		DB:  db,
 		log: log,
 	}, nil
 }
 
-func (m *MySQL) Close() error {
+func (m *DB) Close() error {
 	const op = "db.repo.Close"
 
 	if err := m.DB.Close(); err != nil {
