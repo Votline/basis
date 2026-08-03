@@ -6,6 +6,7 @@ import (
 	"context"
 	"net/http"
 
+	"gateway/internal/db"
 	"gateway/internal/services"
 
 	"go.uber.org/zap"
@@ -14,9 +15,10 @@ import (
 type teamservice struct {
 	name string
 	log  *zap.Logger
+	db   *db.DB
 }
 
-func NewTS(mux *http.ServeMux, log *zap.Logger) (services.Service, error) {
+func NewTS(mux *http.ServeMux, db *db.DB, log *zap.Logger) (services.Service, error) {
 	const op = "team_service.NewTS"
 
 	log.Debug("Successfully created team service",
@@ -25,6 +27,7 @@ func NewTS(mux *http.ServeMux, log *zap.Logger) (services.Service, error) {
 	return &teamservice{
 		name: "team_service",
 		log:  log,
+		db:   db,
 	}, nil
 }
 

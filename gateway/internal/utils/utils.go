@@ -2,6 +2,7 @@
 package utils
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"strconv"
@@ -83,4 +84,9 @@ func ParseJWT(tokenString string, secret []byte) (*CustomClaims, error) {
 	}
 
 	return claims, nil
+}
+
+func GetUserIDFromContext(ctx context.Context) (int64, bool) {
+	userID, ok := ctx.Value("user_id").(int64)
+	return userID, ok
 }

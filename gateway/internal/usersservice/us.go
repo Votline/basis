@@ -21,17 +21,12 @@ type UsersService struct {
 	db        *db.DB
 }
 
-func NewUS(mux *http.ServeMux, log *zap.Logger) (services.Service, error) {
+func NewUS(mux *http.ServeMux, db *db.DB, log *zap.Logger) (services.Service, error) {
 	const op = "users_service.NewUS"
 
 	jwtSecret := []byte(os.Getenv("JWT_SECRET"))
 	if len(jwtSecret) == 0 {
 		return nil, fmt.Errorf("%s: get jwt secret: nil jwt secret:", op)
-	}
-
-	db, err := db.NewDB(log)
-	if err != nil {
-		return nil, fmt.Errorf("%s: create db: %w", op, err)
 	}
 
 	log.Debug("Successfully created users service",

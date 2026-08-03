@@ -9,7 +9,7 @@ Body:`
 `
 ID:0
 Type:http
-Response:`{"email":"b5325b96-6ecb-4367-87a5-926c7db301f5@gmail.com","id":6}
+Response:`{"email":"228de489-ee75-408f-a539-cb13d1e4e0ed@gmail.com","id":10}
 `
 [\register]
 
@@ -24,7 +24,20 @@ Body:`
 `
 ID:1
 Type:http
-Response:`{"token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjo2LCJlbWFpbCI6ImI1MzI1Yjk2LTZlY2ItNDM2Ny04N2E1LTkyNmM3ZGIzMDFmNUBnbWFpbC5jb20iLCJleHAiOjE3ODU4NjMwOTQsImlhdCI6MTc4NTc3NjY5NH0.wsdCjwf8xpEITXsrvwHeYwd-PcKl9uXaXZknyIhA474"}
+Response:`{"token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoxMCwiZW1haWwiOiIyMjhkZTQ4OS1lZTc1LTQwOGYtYTUzOS1jYjEzZDFlNGUwZWRAZ21haWwuY29tIiwiZXhwIjoxNzg1ODY0OTQ4LCJpYXQiOjE3ODU3Nzg1NDh9.ANRVQ7PUlkNbYvbOlxtAX-k2YAHM0X1SvAnaD2ERqMs"}
 `
 [\login]
+
+[setup]
+URL:
+ID:2
+Type:http
+SetEnvironments:`
+[check_envs]
+UserToken: {RESPONSE id=1 json:token}
+UserID: {RESPONSE id=0 json:id}
+[\check_envs]
+`
+Response:
+[\setup]
 

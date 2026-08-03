@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 
+	"gateway/internal/db"
 	"gateway/internal/middlewares"
 	"gateway/internal/rdb"
 	"gateway/internal/services"
@@ -68,13 +69,18 @@ func initServices(mux, pmux *http.ServeMux, log *zap.Logger) ([]services.Service
 
 	svcs := make([]services.Service, 0, 3)
 
-	us, err := usersservice.NewUS(mux, log)
+	db, err := db.NewDB(log)
+	if err != nil {
+		return nil, fmt.Errorf("%s: create db: %w", op, err)
+	}
+
+	us, err := usersservice.NewUS(mux, db, log)
 	if err != nil {
 		return nil, fmt.Errorf("%s: init users-service: %w", op, err)
 	}
 	us.RegisterRoutes(mux)
 
-	teamsS, err := teamservice.NewTS(pmux, log)
+	teamsS, err := teamservice.NewTS(pmux, db, log)
 	if err != nil {
 		return nil, fmt.Errorf("%s: init team-service: %w", op, err)
 	}
