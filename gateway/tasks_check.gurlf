@@ -1,0 +1,89 @@
+[create_task]
+URL:http://localhost:8080/api/v1/tasks
+Method:POST
+Body:`
+{
+    "title": "Task-{RANDOM oneof=uuid}",
+    "description": "Test task description",
+    "team_id": 14,
+    "assignee_id": null
+}
+`
+Headers:`
+    Content-Type: application/json
+    Authorization: Bearer {ENVIRONMENT key=UserToken ; from=check_envs}
+`
+ID:0
+Type:http
+Response:`{"id":8,"title":"Task-14db0575-ac08-435d-bed6-66c85359d6ef","description":"Test task description","status":"todo","team_id":14,"assignee_id":null,"created_by":12,"created_at":"2026-08-03T18:22:57Z","updated_at":"2026-08-03T18:22:57Z"}
+`
+[\create_task]
+
+[create_task]
+URL:http://localhost:8080/api/v1/tasks
+Method:POST
+Body:`
+{
+    "title": "Task-{RANDOM oneof=uuid}",
+    "description": "Test task description",
+    "team_id": 14,
+    "assignee_id": null
+}
+`
+Headers:`
+    Content-Type: application/json
+    Authorization: Bearer {ENVIRONMENT key=UserToken ; from=check_envs}
+`
+ID:1
+Type:http
+Response:`{"id":9,"title":"Task-8cde6e32-d3c9-4ba4-b1b7-683b1a4ccae7","description":"Test task description","status":"todo","team_id":14,"assignee_id":null,"created_by":12,"created_at":"2026-08-03T18:22:57Z","updated_at":"2026-08-03T18:22:57Z"}
+`
+[\create_task]
+
+[get_tasks]
+URL:http://localhost:8080/api/v1/tasks?team_id=14&status=todo
+Method:GET
+Headers:`
+    Content-Type: application/json
+    Authorization: Bearer {ENVIRONMENT key=UserToken ; from=check_envs}
+`
+ID:2
+Type:http
+Response:`[{"id":9,"title":"Task-8cde6e32-d3c9-4ba4-b1b7-683b1a4ccae7","description":"Test task description","status":"todo","team_id":14,"assignee_id":null,"created_by":12,"created_at":"2026-08-03T18:22:57Z","updated_at":"2026-08-03T18:22:57Z"},{"id":8,"title":"Task-14db0575-ac08-435d-bed6-66c85359d6ef","description":"Test task description","status":"todo","team_id":14,"assignee_id":null,"created_by":12,"created_at":"2026-08-03T18:22:57Z","updated_at":"2026-08-03T18:22:57Z"},{"id":7,"title":"Task-5756dfd5-42c8-44fa-8415-a7c827de8a41","description":"Test task description","status":"todo","team_id":14,"assignee_id":null,"created_by":12,"created_at":"2026-08-03T18:19:58Z","updated_at":"2026-08-03T18:19:58Z"},{"id":6,"title":"Task-8df34ffc-ef32-4a59-be67-aba2218644aa","description":"Test task description","status":"todo","team_id":14,"assignee_id":null,"created_by":12,"created_at":"2026-08-03T18:19:58Z","updated_at":"2026-08-03T18:19:58Z"},{"id":5,"title":"Task-142c64fa-aed7-431d-b0d1-ed0d3cd9633b","description":"Test task description","status":"todo","team_id":14,"assignee_id":null,"created_by":12,"created_at":"2026-08-03T18:17:33Z","updated_at":"2026-08-03T18:17:33Z"},{"id":4,"title":"Task-807189a7-fb4d-42fa-95c4-d13ee40f2459","description":"Test task description","status":"todo","team_id":14,"assignee_id":null,"created_by":12,"created_at":"2026-08-03T18:17:33Z","updated_at":"2026-08-03T18:17:33Z"},{"id":3,"title":"Task-0a3c6228-d9fe-4839-86a7-b6a254cb91ba","description":"Test task description","status":"todo","team_id":14,"assignee_id":null,"created_by":12,"created_at":"2026-08-03T18:17:29Z","updated_at":"2026-08-03T18:17:29Z"},{"id":2,"title":"Task-fa88eaf5-19d5-4150-8777-38a0edd984b5","description":"Test task description","status":"todo","team_id":14,"assignee_id":null,"created_by":12,"created_at":"2026-08-03T18:17:29Z","updated_at":"2026-08-03T18:17:29Z"}]
+`
+[\get_tasks]
+
+[update_task]
+URL:http://localhost:8080/api/v1/tasks/1
+Method:PUT
+Body:`
+{
+    "title": "Updated Task Title",
+    "description": "Updated description",
+    "status": "in_progress",
+    "assignee_id": null
+}
+`
+Headers:`
+    Content-Type: application/json
+    Authorization: Bearer {ENVIRONMENT key=UserToken ; from=check_envs}
+`
+ID:3
+Type:http
+Response:`{"id":1,"title":"Updated Task Title","description":"Updated description","status":"in_progress","team_id":14,"assignee_id":null,"created_by":12,"created_at":"2026-08-03T18:15:35Z","updated_at":"2026-08-03T18:19:58Z"}
+`
+[\update_task]
+
+[get_task_history]
+URL:http://localhost:8080/api/v1/tasks/1/history
+Method:GET
+Headers:`
+    Content-Type: application/json
+    Authorization: Bearer {ENVIRONMENT key=UserToken ; from=check_envs}
+`
+ID:4
+Type:http
+Response:`[{"id":1,"task_id":1,"changed_by":12,"field_changed":"title","old_value":"Task-f6d6ddf7-7785-4a64-ac66-84958225ca25","new_value":"Updated Task Title","created_at":"2026-08-03T18:19:58Z"},{"id":2,"task_id":1,"changed_by":12,"field_changed":"description","old_value":"Test task description","new_value":"Updated description","created_at":"2026-08-03T18:19:58Z"},{"id":3,"task_id":1,"changed_by":12,"field_changed":"status","old_value":"todo","new_value":"in_progress","created_at":"2026-08-03T18:19:58Z"}]
+`
+[\get_task_history]
+

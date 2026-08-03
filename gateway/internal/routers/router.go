@@ -86,7 +86,7 @@ func initServices(mux, pmux *http.ServeMux, log *zap.Logger) ([]services.Service
 	}
 	teamsS.RegisterRoutes(pmux)
 
-	tasksS, err := taskservice.NewTS(pmux, log)
+	tasksS, err := taskservice.NewTS(pmux, db, log)
 	if err != nil {
 		return nil, fmt.Errorf("%s: init tasks-service: %w", op, err)
 	}

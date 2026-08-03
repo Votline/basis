@@ -9,7 +9,7 @@ Body:`
 `
 ID:0
 Type:http
-Response:`{"email":"228de489-ee75-408f-a539-cb13d1e4e0ed@gmail.com","id":10}
+Response:`{"email":"c0c62c88-f729-4fef-9a1c-1a3b939cdda6@gmail.com","id":12}
 `
 [\register]
 
@@ -24,7 +24,7 @@ Body:`
 `
 ID:1
 Type:http
-Response:`{"token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoxMCwiZW1haWwiOiIyMjhkZTQ4OS1lZTc1LTQwOGYtYTUzOS1jYjEzZDFlNGUwZWRAZ21haWwuY29tIiwiZXhwIjoxNzg1ODY0OTQ4LCJpYXQiOjE3ODU3Nzg1NDh9.ANRVQ7PUlkNbYvbOlxtAX-k2YAHM0X1SvAnaD2ERqMs"}
+Response:`{"token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoxMiwiZW1haWwiOiJjMGM2MmM4OC1mNzI5LTRmZWYtOWExYy0xYTNiOTM5Y2RkYTZAZ21haWwuY29tIiwiZXhwIjoxNzg1ODY3MTU2LCJpYXQiOjE3ODU3ODA3NTZ9.GJU3KhQsi1XCwiavWycCEZP7XTf01v8i_DNuTNNTj7Q"}
 `
 [\login]
 
