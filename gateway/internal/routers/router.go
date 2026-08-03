@@ -6,6 +6,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"os"
 
 	"gateway/internal/middlewares"
 	"gateway/internal/rdb"
@@ -27,10 +28,20 @@ func Init(log *zap.Logger) (*Server, error) {
 	const op = "routers.Init"
 
 	mux := http.NewServeMux()
-	svcs, err := initServices(mux, log)
+	protectedMux := http.NewServeMux()
+
+	svcs, err := initServices(mux, protectedMux, log)
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
+
+	jwtSecret := os.Getenv("JWT_SECRET")
+	if jwtSecret == "" {
+		return nil, fmt.Errorf("%s: get jwt secret: no jwt secret found", op)
+	}
+	auth := middlewares.NewAuth(jwtSecret, log)
+
+	mux.Handle("/", auth.Process(protectedMux))
 
 	rc, err := rdb.NewRC(log)
 	if err != nil {
@@ -39,8 +50,7 @@ func Init(log *zap.Logger) (*Server, error) {
 
 	handler := attachMiddlewares(mux, rc, log)
 
-	log.Debug("Successfully created server",
-		zap.String("op", op))
+	log.Debug("Successfully created server", zap.String("op", op))
 
 	return &Server{
 		srv: &http.Server{
@@ -52,33 +62,31 @@ func Init(log *zap.Logger) (*Server, error) {
 	}, nil
 }
 
-// initServices creates all services
-// and register they endpoints to the mux
-func initServices(mux *http.ServeMux, log *zap.Logger) ([]services.Service, error) {
+// initServices creates all services and registers their endpoints to respective muxes
+func initServices(mux, pmux *http.ServeMux, log *zap.Logger) ([]services.Service, error) {
 	const op = "routers.initServices"
 
-	svcs := make([]services.Service, 0, 1)
+	svcs := make([]services.Service, 0, 3)
 
 	us, err := usersservice.NewUS(mux, log)
 	if err != nil {
 		return nil, fmt.Errorf("%s: init users-service: %w", op, err)
 	}
+	us.RegisterRoutes(mux)
 
-	teamsS, err := teamservice.NewTS(mux, log)
+	teamsS, err := teamservice.NewTS(pmux, log)
 	if err != nil {
 		return nil, fmt.Errorf("%s: init team-service: %w", op, err)
 	}
+	teamsS.RegisterRoutes(pmux)
 
-	tasksS, err := taskservice.NewTS(mux, log)
+	tasksS, err := taskservice.NewTS(pmux, log)
 	if err != nil {
 		return nil, fmt.Errorf("%s: init tasks-service: %w", op, err)
 	}
+	tasksS.RegisterRoutes(pmux)
 
 	svcs = append(svcs, us, teamsS, tasksS)
-
-	for _, svc := range svcs {
-		svc.RegisterRoutes(mux)
-	}
 
 	return svcs, nil
 }
