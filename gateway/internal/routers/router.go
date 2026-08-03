@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"gateway/internal/middlewares"
 	"gateway/internal/services"
 	"gateway/internal/teamservice"
 	"gateway/internal/usersservice"
@@ -28,9 +29,8 @@ func Init(log *zap.Logger) (*Server, error) {
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
-	var handler http.Handler = mux
 
-	attachMiddlewares(handler)
+	handler := attachMiddlewares(mux, log)
 
 	return &Server{
 		srv: &http.Server{
@@ -75,8 +75,14 @@ func initServices(mux *http.ServeMux, log *zap.Logger) ([]services.Service, erro
 
 // attachMiddlewares create middlewares and
 // attach them to the handler
-func attachMiddlewares(handler http.Handler) {
+func attachMiddlewares(mux http.Handler, log *zap.Logger) http.Handler {
 	const op = "routers.attachMiddlewares"
+
+	return middlewares.Chain(
+		mux,
+		middlewares.Recovery(log),
+		middlewares.Logging(log),
+	)
 }
 
 // Close gracefully shuts down http server
