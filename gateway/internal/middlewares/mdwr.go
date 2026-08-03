@@ -42,7 +42,8 @@ func Recovery(log *zap.Logger) Middleware {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			defer func() {
 				if err := recover(); err != nil {
-					log.Error("panic recovered in http handler", zap.Any("error", err))
+					log.Error("panic recovered in http handler",
+						zap.Any("error", err))
 					http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 				}
 			}()
