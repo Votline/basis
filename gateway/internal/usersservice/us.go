@@ -1,4 +1,4 @@
-// Package usersservice implement 'Service' interface
+// Package usersservice us.go implement 'Service' interface
 // for any users operations
 package usersservice
 
@@ -19,6 +19,9 @@ type UsersService struct {
 func NewUS(mux *http.ServeMux, log *zap.Logger) (services.Service, error) {
 	const op = "users_service.NewUS"
 
+	log.Debug("Successfully created users service",
+		zap.String("op", op))
+
 	return &UsersService{
 		name: "users_service",
 		log:  log,
@@ -37,6 +40,6 @@ func (us *UsersService) Close(ctx context.Context) error {
 func (us *UsersService) RegisterRoutes(mux *http.ServeMux) {
 	const op = "users_service.RegisterRoutes"
 
-	mux.HandleFunc("POST /api/v1/register", nil)
-	mux.HandleFunc("POST /api/v1/login", nil)
+	mux.HandleFunc("POST /api/v1/register", us.register)
+	mux.HandleFunc("POST /api/v1/login", us.login)
 }

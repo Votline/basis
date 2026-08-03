@@ -21,6 +21,15 @@ func main() {
 	}
 
 	quit := make(chan os.Signal, 1)
+
+	go func() {
+		if err := srv.Start(); err != nil {
+			log.Error("Failed to start server",
+				zap.Error(err))
+			quit <- os.Interrupt
+		}
+	}()
+
 	signal.Notify(quit, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
 	<-quit
 	gracefulShutdown(srv, log)

@@ -19,25 +19,28 @@ type teamservice struct {
 func NewTS(mux *http.ServeMux, log *zap.Logger) (services.Service, error) {
 	const op = "team_service.NewTS"
 
+	log.Debug("Successfully created team service",
+		zap.String("op", op))
+
 	return &teamservice{
 		name: "team_service",
 		log:  log,
 	}, nil
 }
 
-func (us *teamservice) GetName() string {
-	return us.name
+func (ts *teamservice) GetName() string {
+	return ts.name
 }
 
-func (us *teamservice) Close(ctx context.Context) error {
+func (ts *teamservice) Close(ctx context.Context) error {
 	const op = "team_service.Close"
 	return nil
 }
 
-func (us *teamservice) RegisterRoutes(mux *http.ServeMux) {
+func (ts *teamservice) RegisterRoutes(mux *http.ServeMux) {
 	const op = "team_service.RegisterRoutes"
 
-	mux.HandleFunc("POST /api/v1/teams", nil)
-	mux.HandleFunc("GET /api/v1/teams", nil)
-	mux.HandleFunc("POST /api/v1/teams/{id}/invite", nil)
+	mux.HandleFunc("POST /api/v1/teams", ts.newTeam)
+	mux.HandleFunc("GET /api/v1/teams", ts.getTeams)
+	mux.HandleFunc("POST /api/v1/teams/{id}/invite", ts.inviteByID)
 }

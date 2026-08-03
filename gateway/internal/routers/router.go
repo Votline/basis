@@ -9,6 +9,7 @@ import (
 
 	"gateway/internal/middlewares"
 	"gateway/internal/services"
+	taskservice "gateway/internal/tasksservice"
 	"gateway/internal/teamservice"
 	"gateway/internal/usersservice"
 
@@ -31,6 +32,9 @@ func Init(log *zap.Logger) (*Server, error) {
 	}
 
 	handler := attachMiddlewares(mux, log)
+
+	log.Debug("Successfully created server",
+		zap.String("op", op))
 
 	return &Server{
 		srv: &http.Server{
@@ -59,7 +63,7 @@ func initServices(mux *http.ServeMux, log *zap.Logger) ([]services.Service, erro
 		return nil, fmt.Errorf("%s: init team-service: %w", op, err)
 	}
 
-	tasksS, err := teamservice.NewTS(mux, log)
+	tasksS, err := taskservice.NewTS(mux, log)
 	if err != nil {
 		return nil, fmt.Errorf("%s: init tasks-service: %w", op, err)
 	}
@@ -83,6 +87,17 @@ func attachMiddlewares(mux http.Handler, log *zap.Logger) http.Handler {
 		middlewares.Recovery(log),
 		middlewares.Logging(log),
 	)
+}
+
+// Start starts the http server
+func (s *Server) Start() error {
+	const op = "router.Start"
+	s.log.Info("Starting server...", zap.String("op", op))
+
+	if err := s.srv.ListenAndServe(); err != nil {
+		return fmt.Errorf("%s: listen and serve: %w", op, err)
+	}
+	return nil
 }
 
 // Close gracefully shuts down http server
