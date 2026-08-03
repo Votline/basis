@@ -1,4 +1,4 @@
-// Package taskservice implement 'Service' interface
+// Package taskservice tasks.go implement 'Service' interface
 // for any tasks operations
 package taskservice
 

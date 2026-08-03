@@ -8,6 +8,7 @@ import (
 	"net/http"
 
 	"gateway/internal/middlewares"
+	"gateway/internal/rdb"
 	"gateway/internal/services"
 	taskservice "gateway/internal/tasksservice"
 	"gateway/internal/teamservice"
@@ -31,7 +32,12 @@ func Init(log *zap.Logger) (*Server, error) {
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
 
-	handler := attachMiddlewares(mux, log)
+	rc, err := rdb.NewRC(log)
+	if err != nil {
+		return nil, fmt.Errorf("%s: init rdb: %w", op, err)
+	}
+
+	handler := attachMiddlewares(mux, rc, log)
 
 	log.Debug("Successfully created server",
 		zap.String("op", op))
@@ -79,13 +85,16 @@ func initServices(mux *http.ServeMux, log *zap.Logger) ([]services.Service, erro
 
 // attachMiddlewares create middlewares and
 // attach them to the handler
-func attachMiddlewares(mux http.Handler, log *zap.Logger) http.Handler {
+func attachMiddlewares(mux http.Handler, rc *rdb.RedisClient, log *zap.Logger) http.Handler {
 	const op = "routers.attachMiddlewares"
+
+	rt := middlewares.NewRateLimiter(rc, log)
 
 	return middlewares.Chain(
 		mux,
 		middlewares.Recovery(log),
 		middlewares.Logging(log),
+		rt,
 	)
 }
 

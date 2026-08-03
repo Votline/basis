@@ -1,4 +1,4 @@
-// Package teamservice implement 'Service' interface
+// Package teamservice teams.go implement 'Service' interface
 // for any teams operations
 package teamservice
 
