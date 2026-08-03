@@ -5,8 +5,10 @@ package taskservice
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 	"strconv"
+	"time"
 
 	"gateway/internal/db"
 	"gateway/internal/utils"
@@ -100,14 +102,27 @@ func (ts *taskservice) getTasks(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var assigneeID *int64
+	assigneeStr := "nil"
 	if aStr := q.Get("assignee_id"); aStr != "" {
 		if parsedA, err := strconv.ParseInt(aStr, 10, 64); err == nil {
 			assigneeID = &parsedA
+			assigneeStr = aStr
 		}
 	}
 
 	limit, _ := strconv.Atoi(q.Get("limit"))
 	offset, _ := strconv.Atoi(q.Get("offset"))
+
+	cacheKey := fmt.Sprintf("tasks:team:%d:status:%s:assignee:%s:limit:%d:offset:%d",
+		teamID, q.Get("status"), assigneeStr, limit, offset,
+	)
+
+	if cachedTasks, err := ts.rc.Get(r.Context(), cacheKey); err == nil && cachedTasks != "" {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte(cachedTasks))
+		return
+	}
 
 	filter := db.TaskFilter{
 		TeamID:     teamID,
@@ -128,8 +143,16 @@ func (ts *taskservice) getTasks(w http.ResponseWriter, r *http.Request) {
 		tasks = []db.Task{}
 	}
 
+	bytesData, err := json.Marshal(tasks)
+	if err == nil {
+		if err := ts.rc.Set(r.Context(), cacheKey, bytesData, 5*time.Minute); err != nil {
+			ts.log.Warn("failed to cache tasks in redis", zap.String("op", op), zap.Error(err))
+		}
+	}
+
 	w.Header().Set("Content-Type", "application/json")
-	_ = json.NewEncoder(w).Encode(tasks)
+	w.WriteHeader(http.StatusOK)
+	_, _ = w.Write(bytesData)
 }
 
 func (ts *taskservice) updTask(w http.ResponseWriter, r *http.Request) {

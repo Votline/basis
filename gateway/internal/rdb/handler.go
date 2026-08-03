@@ -26,3 +26,22 @@ func (rc *RedisClient) Expire(ctx context.Context, key string, ttl time.Duration
 	}
 	return nil
 }
+
+// Get retrieves a string value by key
+func (rc *RedisClient) Get(ctx context.Context, key string) (string, error) {
+	const op = "rdb.handler.Get"
+	val, err := rc.rdb.Get(ctx, key).Result()
+	if err != nil {
+		return "", fmt.Errorf("%s: %w", op, err)
+	}
+	return val, nil
+}
+
+// Set stores a string value with TTL
+func (rc *RedisClient) Set(ctx context.Context, key string, value interface{}, ttl time.Duration) error {
+	const op = "rdb.handler.Set"
+	if err := rc.rdb.Set(ctx, key, value, ttl).Err(); err != nil {
+		return fmt.Errorf("%s: %w", op, err)
+	}
+	return nil
+}

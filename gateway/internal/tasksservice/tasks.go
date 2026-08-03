@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"gateway/internal/db"
+	"gateway/internal/rdb"
 	"gateway/internal/services"
 
 	"go.uber.org/zap"
@@ -16,9 +17,10 @@ type taskservice struct {
 	name string
 	log  *zap.Logger
 	db   *db.DB
+	rc   *rdb.RedisClient
 }
 
-func NewTS(mux *http.ServeMux, db *db.DB, log *zap.Logger) (services.Service, error) {
+func NewTS(mux *http.ServeMux, db *db.DB, rc *rdb.RedisClient, log *zap.Logger) (services.Service, error) {
 	const op = "task_service.NewTS"
 
 	log.Debug("Successfully created task service",
@@ -28,6 +30,7 @@ func NewTS(mux *http.ServeMux, db *db.DB, log *zap.Logger) (services.Service, er
 		name: "task_service",
 		log:  log,
 		db:   db,
+		rc:   rc,
 	}, nil
 }
 

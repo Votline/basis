@@ -32,7 +32,12 @@ func Init(log *zap.Logger) (*Server, error) {
 	mux := http.NewServeMux()
 	protectedMux := http.NewServeMux()
 
-	svcs, err := initServices(mux, protectedMux, log)
+	rc, err := rdb.NewRC(log)
+	if err != nil {
+		return nil, fmt.Errorf("%s: init rdb: %w", op, err)
+	}
+
+	svcs, err := initServices(mux, protectedMux, rc, log)
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
@@ -45,11 +50,6 @@ func Init(log *zap.Logger) (*Server, error) {
 
 	mux.Handle("/metrics", promhttp.Handler())
 	mux.Handle("/", auth.Process(protectedMux))
-
-	rc, err := rdb.NewRC(log)
-	if err != nil {
-		return nil, fmt.Errorf("%s: init rdb: %w", op, err)
-	}
 
 	handler := attachMiddlewares(mux, rc, log)
 
@@ -66,7 +66,7 @@ func Init(log *zap.Logger) (*Server, error) {
 }
 
 // initServices creates all services and registers their endpoints to respective muxes
-func initServices(mux, pmux *http.ServeMux, log *zap.Logger) ([]services.Service, error) {
+func initServices(mux, pmux *http.ServeMux, rc *rdb.RedisClient, log *zap.Logger) ([]services.Service, error) {
 	const op = "routers.initServices"
 
 	svcs := make([]services.Service, 0, 3)
@@ -88,7 +88,7 @@ func initServices(mux, pmux *http.ServeMux, log *zap.Logger) ([]services.Service
 	}
 	teamsS.RegisterRoutes(pmux)
 
-	tasksS, err := taskservice.NewTS(pmux, db, log)
+	tasksS, err := taskservice.NewTS(pmux, db, rc, log)
 	if err != nil {
 		return nil, fmt.Errorf("%s: init tasks-service: %w", op, err)
 	}
