@@ -16,6 +16,7 @@ import (
 	"gateway/internal/teamservice"
 	"gateway/internal/usersservice"
 
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"go.uber.org/zap"
 )
 
@@ -42,6 +43,7 @@ func Init(log *zap.Logger) (*Server, error) {
 	}
 	auth := middlewares.NewAuth(jwtSecret, log)
 
+	mux.Handle("/metrics", promhttp.Handler())
 	mux.Handle("/", auth.Process(protectedMux))
 
 	rc, err := rdb.NewRC(log)
@@ -102,13 +104,12 @@ func initServices(mux, pmux *http.ServeMux, log *zap.Logger) ([]services.Service
 func attachMiddlewares(mux http.Handler, rc *rdb.RedisClient, log *zap.Logger) http.Handler {
 	const op = "routers.attachMiddlewares"
 
-	rt := middlewares.NewRateLimiter(rc, log)
-
 	return middlewares.Chain(
 		mux,
 		middlewares.Recovery(log),
 		middlewares.Logging(log),
-		rt,
+		middlewares.NewMetricsMiddleware(log),
+		middlewares.NewRateLimiter(rc, log),
 	)
 }
 
