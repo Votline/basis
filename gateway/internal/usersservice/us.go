@@ -37,6 +37,6 @@ func (us *UsersService) Close(ctx context.Context) error {
 func (us *UsersService) RegisterRoutes(mux *http.ServeMux) {
 	const op = "users_service.RegisterRoutes"
 
-	mux.Handle("/api/v1/register", nil)
-	mux.Handle("/api/v1/login", nil)
+	mux.HandleFunc("POST /api/v1/register", nil)
+	mux.HandleFunc("POST /api/v1/login", nil)
 }

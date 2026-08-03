@@ -8,6 +8,7 @@ import (
 	"net/http"
 
 	"gateway/internal/services"
+	"gateway/internal/teamservice"
 	"gateway/internal/usersservice"
 
 	"go.uber.org/zap"
@@ -34,7 +35,7 @@ func Init(log *zap.Logger) (*Server, error) {
 	return &Server{
 		srv: &http.Server{
 			Addr:    ":8080",
-			Handler: mux,
+			Handler: handler,
 		},
 		log:  log,
 		svcs: svcs,
@@ -52,7 +53,18 @@ func initServices(mux *http.ServeMux, log *zap.Logger) ([]services.Service, erro
 	if err != nil {
 		return nil, fmt.Errorf("%s: init users-service: %w", op, err)
 	}
-	svcs = append(svcs, us)
+
+	teamsS, err := teamservice.NewTS(mux, log)
+	if err != nil {
+		return nil, fmt.Errorf("%s: init team-service: %w", op, err)
+	}
+
+	tasksS, err := teamservice.NewTS(mux, log)
+	if err != nil {
+		return nil, fmt.Errorf("%s: init tasks-service: %w", op, err)
+	}
+
+	svcs = append(svcs, us, teamsS, tasksS)
 
 	for _, svc := range svcs {
 		svc.RegisterRoutes(mux)
